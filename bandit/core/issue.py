@@ -38,29 +38,29 @@ class Cwe:
     def __init__(self, id=NOTSET):
         self.id = id
 
-    def link(self):
+    def link(self) -> str:
         if self.id == Cwe.NOTSET:
             return ""
 
         return Cwe.MITRE_URL_PATTERN % str(self.id)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.id == Cwe.NOTSET:
             return ""
 
         return "CWE-%i (%s)" % (self.id, self.link())
 
-    def as_dict(self):
+    def as_dict(self) -> dict:
         return (
             {"id": self.id, "link": self.link()}
             if self.id != Cwe.NOTSET
             else {}
         )
 
-    def as_jsons(self):
+    def as_jsons(self) -> str:
         return str(self.as_dict())
 
-    def from_dict(self, data):
+    def from_dict(self, data: dict) -> None:
         if "id" in data:
             self.id = int(data["id"])
         else:
@@ -233,13 +233,13 @@ class Issue:
         self.end_col_offset = data.get("end_col_offset", 0)
 
 
-def cwe_from_dict(data):
+def cwe_from_dict(data: dict) -> Cwe:
     cwe = Cwe()
     cwe.from_dict(data)
     return cwe
 
 
-def issue_from_dict(data):
+def issue_from_dict(data: dict) -> Issue:
     i = Issue(severity=data["issue_severity"])
     i.from_dict(data)
     return i

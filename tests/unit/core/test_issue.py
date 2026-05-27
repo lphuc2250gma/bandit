@@ -129,6 +129,62 @@ class IssueTests(testtools.TestCase):
         except UnicodeDecodeError:
             self.fail("Bytes not properly decoded in issue.get_code()")
 
+    def test_issue_eq_different_cwe(self):
+        issue_a = _get_issue_instance()
+        issue_b = _get_issue_instance()
+        issue_b.cwe = issue.Cwe(issue.Cwe.SQL_INJECTION)
+        self.assertNotEqual(issue_a, issue_b)
+
+    def test_issue_eq_different_test_id(self):
+        issue_a = _get_issue_instance()
+        issue_b = _get_issue_instance()
+        issue_b.test_id = "B000"
+        self.assertNotEqual(issue_a, issue_b)
+
+    def test_issue_filter_all_combinations(self):
+        for sev in constants.RANKING:
+            for conf in constants.RANKING:
+                issue_inst = _get_issue_instance(severity=sev, confidence=conf)
+                for min_sev in constants.RANKING:
+                    for min_conf in constants.RANKING:
+                        expected = (
+                            constants.RANKING.index(sev)
+                            >= constants.RANKING.index(min_sev)
+                            and constants.RANKING.index(conf)
+                            >= constants.RANKING.index(min_conf)
+                        )
+                        result = issue_inst.filter(min_sev, min_conf)
+                        self.assertEqual(
+                            expected,
+                            result,
+                            f"filter({min_sev}, {min_conf}) for issue "
+                            f"({sev}, {conf}) expected {expected} but got "
+                            f"{result}",
+                        )
+
+    def test_issue_hash(self):
+        issue_a = _get_issue_instance()
+        issue_b = _get_issue_instance()
+        self.assertEqual(issue_a, issue_b)
+        # __hash__ is based on object identity, not value equality
+        self.assertNotEqual(hash(issue_a), hash(issue_b))
+        self.assertEqual(hash(issue_a), id(issue_a))
+        self.assertEqual(hash(issue_b), id(issue_b))
+
+    def test_cwe_eq_and_hash(self):
+        cwe_a = issue.Cwe(issue.Cwe.MULTIPLE_BINDS)
+        cwe_b = issue.Cwe(issue.Cwe.MULTIPLE_BINDS)
+        self.assertEqual(cwe_a, cwe_b)
+        # __hash__ returns id(self), so equal CWEs may have different hashes
+        self.assertNotEqual(hash(cwe_a), hash(cwe_b))
+
+    def test_cwe_notset(self):
+        cwe = issue.Cwe()
+        self.assertEqual(cwe.id, issue.Cwe.NOTSET)
+        self.assertEqual(cwe.link(), "")
+        self.assertEqual(str(cwe), "")
+        self.assertEqual(cwe.as_dict(), {})
+
 
 def _get_issue_instance(
     severity=bandit.MEDIUM,
