@@ -147,11 +147,14 @@ class IssueTests(testtools.TestCase):
                 issue_inst = _get_issue_instance(severity=sev, confidence=conf)
                 for min_sev in constants.RANKING:
                     for min_conf in constants.RANKING:
-                        expected = (
-                            constants.RANKING.index(sev)
-                            >= constants.RANKING.index(min_sev)
-                            and constants.RANKING.index(conf)
-                            >= constants.RANKING.index(min_conf)
+                        expected = constants.RANKING.index(
+                            sev
+                        ) >= constants.RANKING.index(
+                            min_sev
+                        ) and constants.RANKING.index(
+                            conf
+                        ) >= constants.RANKING.index(
+                            min_conf
                         )
                         result = issue_inst.filter(min_sev, min_conf)
                         self.assertEqual(
